@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Love Me Not ❤️</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Poppins:wght@200;300;400&display=swap" rel="stylesheet"/>
+<style>
+  /* ─── RESET & BASE ─────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #06020f;
+    --deep:    #0d0520;
+    --grape:   #2a0a3e;
+    --rose:    #c4516a;
+    --blush:   #e8829a;
+    --gold:    #f5c8a0;
+    --glow:    rgba(196, 81, 106, 0.55);
+    --text:    #f0e6f0;
+    --muted:   rgba(240,230,240,0.45);
+    --font-display: 'Cormorant Garamond', serif;
+    --font-body:    'Poppins', sans-serif;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    cursor: default;
+    user-select: none;
+  }
+
+  /* ─── CANVAS PARTICLES ─────────────────────── */
+  #particles-canvas {
+    position: fixed; inset: 0; z-index: 0;
+    pointer-events: none;
+  }
+
+  /* ─── GRADIENT BACKGROUND ──────────────────── */
+  .bg-gradient {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(60,10,80,0.8) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 85%, rgba(100,10,50,0.6) 0%, transparent 55%),
+      linear-gradient(160deg, #06020f 0%, #10032a 50%, #06020f 100%);
+    animation: bgBreath 12s ease-in-out infinite alternate;
+  }
+  @keyframes bgBreath {
+    0%   { filter: brightness(1); }
+    100% { filter: brightness(1.15); }
+  }
+
+  /* ─── NOISE GRAIN ──────────────────────────── */
+  .grain {
+    position: fixed; inset: 0; z-index: 1; opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  /* ─── SUNFLOWER STRIP ──────────────────────── */
+  .sunflower-strip {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: 110px; z-index: 2;
+    display: flex; align-items: flex-end;
+    justify-content: space-around;
+    padding: 0 10px;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .sunflower {
+    display: flex; flex-direction: column; align-items: center;
+    animation: sunflowerSway var(--sway, 4s) ease-in-out infinite alternate;
+    transform-origin: bottom center;
+    will-change: transform;
+  }
+  @keyframes sunflowerSway {
+    0%   { transform: rotate(calc(var(--lean, -3) * 1deg)); }
+    100% { transform: rotate(calc(var(--lean, -3) * -1deg)); }
+  }
+  .sunflower svg { display: block; }
+
+  /* ─── TAP-TO-START SCREEN ──────────────────── */
+  #intro {
+    position: fixed; inset: 0; z-index: 100;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 28px;
+    background: rgba(6,2,15,0.97);
+    transition: opacity 1.2s ease, visibility 1.2s;
+  }
+  #intro.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+  .intro-heart {
+    font-size: 72px;
+    animation: introPulse 1.6s ease-in-out infinite;
+    filter: drop-shadow(0 0 28px var(--rose));
+  }
+  @keyframes introPulse {
+    0%,100% { transform: scale(1); }
+    50%      { transform: scale(1.18); }
+  }
+
+  .intro-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 7vw, 3.8rem);
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    color: var(--text);
+    text-align: center;
+    line-height: 1.2;
+  }
+  .intro-title span {
+    display: block;
+    font-style: italic;
+    color: var(--blush);
+    font-size: 0.6em;
+    letter-spacing: 0.3em;
+    margin-top: 6px;
+  }
+
+  .tap-btn {
+    margin-top: 16px;
+    padding: 14px 44px;
+    border: 1.5px solid var(--rose);
+    border-radius: 50px;
+    background: transparent;
+    color: var(--blush);
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 300;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.35s ease;
+    animation: tapGlow 2.5s ease-in-out infinite;
+  }
+  .tap-btn:hover {
+    background: var(--rose);
+    color: #fff;
+    box-shadow: 0 0 30px var(--glow);
+  }
+  @keyframes tapGlow {
+    0%,100% { box-shadow: 0 0 8px rgba(196,81,106,0.3); }
+    50%      { box-shadow: 0 0 22px rgba(196,81,106,0.65); }
+  }
+
+  /* ─── MAIN STAGE ───────────────────────────── */
+  #stage {
+    position: fixed; inset: 0; z-index: 5;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 0 20px 140px;
+    opacity: 0;
+    transition: opacity 1.4s ease;
+  }
+  #stage.visible { opacity: 1; }
+
+  /* Name heading */
+  .for-name {
+    font-family: var(--font-display);
+    font-size: clamp(1rem, 3.5vw, 1.4rem);
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    opacity: 0.8;
+    margin-bottom: 10px;
+    min-height: 1.6em;
+  }
+  /* Typing cursor */
+  .cursor {
+    display: inline-block;
+    width: 2px; height: 1.1em;
+    background: var(--gold);
+    vertical-align: middle;
+    animation: blink 0.85s step-end infinite;
+    margin-left: 2px;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* Lyrics box */
+  .lyrics-box {
+    text-align: center;
+    min-height: 9rem;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 14px;
+    margin-bottom: 30px;
+    padding: 0 12px;
+    max-width: 680px;
+  }
+  .lyric-line {
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 5.5vw, 2.6rem);
+    font-weight: 300;
+    font-style: italic;
+    letter-spacing: 0.04em;
+    line-height: 1.35;
+    color: var(--muted);
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+    transition:
+      opacity 0.7s ease,
+      transform 0.7s ease,
+      color 0.5s ease,
+      text-shadow 0.5s ease;
+  }
+  .lyric-line.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  .lyric-line.active {
+    color: var(--text);
+    text-shadow:
+      0 0 18px var(--glow),
+      0 0 40px rgba(196,81,106,0.35);
+    font-size: clamp(1.7rem, 6.5vw, 3.2rem);
+  }
+  .lyric-line.past {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.96);
+  }
+
+  /* Special message */
+  .message {
+    font-family: var(--font-body);
+    font-size: clamp(0.72rem, 2.2vw, 0.9rem);
+    font-weight: 200;
+    letter-spacing: 0.18em;
+    color: var(--blush);
+    opacity: 0.75;
+    text-align: center;
+    margin-bottom: 32px;
+    padding: 0 12px;
+  }
+
+  /* ─── AUDIO PLAYER ─────────────────────────── */
+  .player {
+    position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%);
+    z-index: 10;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 10px;
+    width: min(420px, 92vw);
+  }
+
+  /* Progress bar */
+  .progress-wrap {
+    width: 100%;
+    height: 3px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--rose), var(--gold));
+    border-radius: 4px;
+    box-shadow: 0 0 10px var(--glow);
+    transition: width 0.3s linear;
+  }
+
+  .player-controls {
+    display: flex; align-items: center; gap: 18px;
+  }
+
+  .play-btn {
+    width: 54px; height: 54px;
+    border-radius: 50%;
+    border: 1.5px solid var(--rose);
+    background: rgba(196,81,106,0.12);
+    color: var(--blush);
+    font-size: 1.4rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(196,81,106,0.25);
+    backdrop-filter: blur(6px);
+  }
+  .play-btn:hover {
+    background: var(--rose);
+    color: #fff;
+    box-shadow: 0 0 34px var(--glow);
+    transform: scale(1.06);
+  }
+  .play-btn.pulse {
+    animation: beatPulse 0.4s ease-out;
+  }
+  @keyframes beatPulse {
+    0%   { transform: scale(1.06); box-shadow: 0 0 34px var(--glow); }
+    50%  { transform: scale(1.18); box-shadow: 0 0 50px rgba(196,81,106,0.7); }
+    100% { transform: scale(1.06); box-shadow: 0 0 34px var(--glow); }
+  }
+
+  .time-display {
+    font-size: 0.72rem;
+    font-weight: 300;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+  }
+
+  /* ─── HEART BUTTON ─────────────────────────── */
+  .heart-btn {
+    position: fixed; right: 24px; bottom: 170px; z-index: 20;
+    background: transparent;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    filter: drop-shadow(0 0 10px var(--glow));
+    transition: transform 0.2s ease, filter 0.2s ease;
+    animation: floatHB 3s ease-in-out infinite alternate;
+  }
+  .heart-btn:hover {
+    transform: scale(1.25);
+    filter: drop-shadow(0 0 20px var(--glow));
+  }
+  @keyframes floatHB {
+    0%   { transform: translateY(0); }
+    100% { transform: translateY(-8px); }
+  }
+
+  /* ─── FLOATING HEARTS ──────────────────────── */
+  .float-heart {
+    position: fixed; bottom: 0;
+    font-size: 1.4rem;
+    pointer-events: none; z-index: 50;
+    animation: floatUp var(--dur, 3.5s) ease-out forwards;
+    opacity: 0.9;
+  }
+  @keyframes floatUp {
+    0%   { transform: translateY(0) scale(1)   rotate(0deg); opacity: 0.9; }
+    80%  { opacity: 0.7; }
+    100% { transform: translateY(-85vh) scale(0.5) rotate(25deg); opacity: 0; }
+  }
+
+  /* ─── RESPONSIVE ───────────────────────────── */
+  @media (max-width: 480px) {
+    .sunflower-strip { height: 82px; }
+    .player { bottom: 95px; }
+    .heart-btn { bottom: 145px; right: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Backgrounds -->
+<div class="bg-gradient"></div>
+<div class="grain"></div>
+<canvas id="particles-canvas"></canvas>
+
+<!-- Sunflowers -->
+<div class="sunflower-strip" id="sunflowers"></div>
+
+<!-- ── INTRO SCREEN ──────────────────────────── -->
+<div id="intro">
+  <div class="intro-heart">🌹</div>
+  <div class="intro-title">
+    Love Me Not
+    <span>a song for you</span>
+  </div>
+  <button class="tap-btn" id="tapBtn">✦ tap to begin ✦</button>
+</div>
+
+<!-- ── MAIN STAGE ────────────────────────────── -->
+<div id="stage">
+  <div class="for-name" id="forName"></div>
+  <div class="lyrics-box" id="lyricsBox"></div>
+  <div class="message">Even if you say love me not… I still will ❤️</div>
+</div>
+
+<!-- ── PLAYER ────────────────────────────────── -->
+<div class="player" id="player" style="opacity:0;transition:opacity 1.4s ease;">
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+  <div class="player-controls">
+    <span class="time-display" id="currentTime">0:00</span>
+    <button class="play-btn" id="playBtn">▶</button>
+    <span class="time-display" id="totalTime">0:00</span>
+  </div>
+</div>
+
+<!-- ── HEART BUTTON ──────────────────────────── -->
+<button class="heart-btn" id="heartBtn" style="opacity:0;transition:opacity 1.4s ease;">💖</button>
+
+<!-- ── AUDIO ─────────────────────────────────── -->
+<audio id="audio" preload="auto">  
+  <!-- 🎵 REPLACE THIS SRC WITH YOUR MP3 LINK -->
+  <source src="/abc.mp3" type="audio/mpeg"/>
+</audio>
+
+<script>
+/* ══════════════════════════════════════════════
+   CONFIG — Edit these to personalise
+══════════════════════════════════════════════ */
+const HER_NAME    = "My love";          // ← Her name
+const TYPING_TEXT = `For you ❤️`;       // ← Typing header text
+
+// Lyrics with timestamps in seconds — edit to match your mp3
+const LYRICS = [
+  { t:  0.0, text: "♪" },
+  { t:  16.0, text: "♪" },
+  { t:  16.8, text: "see right now i need you i'll meet you somewhere now" },
+  { t:  21.0, text: "you up now, i see you , i get you, take care now.." },
+  { t:  25.0, text: "slow down, be cool, i miss you, come hereee noww.." },
+  { t:  29.0, text: "its yours now, keep it , ill hold out until now" },
+  { t:  33.0, text: "i need you right now, once i leave you i'm strung out" },
+  { t:  38.0, text: "if i get you, i'm slowlyy breaking down...." },
+  { t:  42.0, text: "and, oh, it's hard to see you ," },
+  { t:  43.0, text: "but i wish you were right hereeee!!!" },
+  { t:  46.5, text: "ohh,its hard to leave you" },
+  { t:  48.0, text: "when i get you everywhere" },
+  { t:  51.0, text: "all this time i'm thinking we could never be a pair" },
+  { t:  54.0, text: "oh, no, i dont need you, but i miss you, come here" },
+  { t:  58.0, text: "and, oh, it's hard to see you ," },
+  { t:  61.0, text: "but i wish you were right hereeee!!!" },
+  { t:  63.0, text: " oh, it's hard to leave you ," },
+  { t:  65.0, text: "when i get you everywhere" },
+  { t:  66.0, text: "all this time i'm thinking i'm strong enough to skin it" },
+  { t:  72.0, text: "oh, no, i dont need you, but i miss you, come here🙏" },
+  { t:  76.0, text: "he love me not, he loves me (yessss)" },
+  { t:  78.0, text: "he holds me tight, then lets me go(neverrrr)" },
+  { t:  80.0, text: "he love me not(neverrr), he loves me(always) " },
+  { t:  82.0, text: "he holds me tight, then lets me go(neverrrr)" }, 
+
+
+
+
+
+
+
+
+
+
+
+];
+
+/* ══════════════════════════════════════════════
+   PARTICLES
+══════════════════════════════════════════════ */
+const canvas = document.getElementById('particles-canvas');
+const ctx    = canvas.getContext('2d');
+let W, H, particles = [];
+
+function resizeCanvas() {
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+const SYMBOLS = ['✦','·','˚','✧','*','⋆'];
+function mkParticle() {
+  return {
+    x:    Math.random() * W,
+    y:    Math.random() * H,
+    size: Math.random() * 6 + 2,
+    vx:   (Math.random() - 0.5) * 0.18,
+    vy:   -(Math.random() * 0.35 + 0.1),
+    alpha: Math.random() * 0.5 + 0.1,
+    symbol: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
+    decay: Math.random() * 0.0008 + 0.0003,
+  };
+}
+for (let i = 0; i < 90; i++) particles.push(mkParticle());
+
+function drawParticles() {
+  ctx.clearRect(0, 0, W, H);
+  particles.forEach((p, i) => {
+    ctx.save();
+    ctx.globalAlpha = p.alpha;
+    ctx.fillStyle   = `hsl(${320 + Math.sin(Date.now()/3000 + i)*20}, 60%, 75%)`;
+    ctx.font        = `${p.size * 1.8}px serif`;
+    ctx.fillText(p.symbol, p.x, p.y);
+    ctx.restore();
+    p.x += p.vx; p.y += p.vy; p.alpha -= p.decay;
+    if (p.alpha <= 0 || p.y < -10) {
+      particles[i] = mkParticle();
+      particles[i].y = H + 5;
+    }
+  });
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+/* ══════════════════════════════════════════════
+   SUNFLOWERS
+══════════════════════════════════════════════ */
+function makeSunflower(size = 60) {
+  return `<svg width="${size}" height="${size * 1.6}" viewBox="0 0 60 96" xmlns="http://www.w3.org/2000/svg">
+    <!-- stem -->
+    <path d="M30 95 Q28 70 30 50" stroke="#4a7c2f" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <!-- leaf -->
+    <path d="M30 75 Q20 65 16 58 Q24 60 30 70" fill="#4a8c35" opacity="0.85"/>
+    <!-- petals -->
+    ${Array.from({length:12}, (_,k) => {
+      const a = (k * 30) * Math.PI / 180;
+      const px = 30 + Math.cos(a)*16, py = 25 + Math.sin(a)*16;
+      return `<ellipse cx="${px}" cy="${py}" rx="5" ry="9"
+               fill="#f5c518" opacity="0.92"
+               transform="rotate(${k*30}, ${px}, ${py})"/>`;
+    }).join('')}
+    <!-- centre -->
+    <circle cx="30" cy="25" r="11" fill="#6b3d1e"/>
+    <circle cx="30" cy="25" r="7"  fill="#8b5e3c" opacity="0.7"/>
+    <!-- seeds texture -->
+    ${Array.from({length:6}, (_,k) => {
+      const a = k * 60 * Math.PI/180;
+      return `<circle cx="${30+Math.cos(a)*4}" cy="${25+Math.sin(a)*4}" r="1.5" fill="#4a2a10" opacity="0.6"/>`;
+    }).join('')}
+    <circle cx="30" cy="25" r="2" fill="#4a2a10" opacity="0.5"/>
+  </svg>`;
+}
+
+const strip = document.getElementById('sunflowers');
+const count = Math.round(window.innerWidth / 68);
+for (let i = 0; i < count + 1; i++) {
+  const sz  = 42 + Math.random() * 24;
+  const sw  = 2.8 + Math.random() * 2;
+  const lean= -4 + Math.random() * 8;
+  const delay = Math.random() * 2;
+  const div = document.createElement('div');
+  div.className = 'sunflower';
+  div.style.setProperty('--sway', `${sw}s`);
+  div.style.setProperty('--lean', lean);
+  div.style.animationDelay = `${delay}s`;
+  div.innerHTML = makeSunflower(sz);
+  strip.appendChild(div);
+}
+
+/* ══════════════════════════════════════════════
+   TYPING ANIMATION
+══════════════════════════════════════════════ */
+const forNameEl = document.getElementById('forName');
+let typingDone = false;
+
+function startTyping() {
+  const full = `${TYPING_TEXT} — ${HER_NAME}`;
+  let i = 0;
+  forNameEl.innerHTML = '<span class="cursor"></span>';
+  const iv = setInterval(() => {
+    if (i >= full.length) { clearInterval(iv); typingDone = true; return; }
+    forNameEl.innerHTML = full.slice(0, ++i) + '<span class="cursor"></span>';
+  }, 68);
+}
+
+/* ══════════════════════════════════════════════
+   LYRICS ENGINE
+══════════════════════════════════════════════ */
+const lyricsBox = document.getElementById('lyricsBox');
+const lineEls   = [];
+let currentIdx  = -1;
+
+LYRICS.forEach((l, i) => {
+  const el = document.createElement('div');
+  el.className   = 'lyric-line';
+  el.textContent = l.text;
+  el.style.display = 'none';
+  lyricsBox.appendChild(el);
+  lineEls.push(el);
+});
+
+function showWindow(idx) {
+  if (idx === currentIdx) return;
+  currentIdx = idx;
+  // Hide all
+  lineEls.forEach(el => {
+    el.style.display = 'none';
+    el.className = 'lyric-line';
+  });
+  // Show window: prev, current, next
+  const show = [idx - 1, idx, idx + 1].filter(n => n >= 0 && n < LYRICS.length);
+  show.forEach(n => {
+    lineEls[n].style.display = 'block';
+    setTimeout(() => lineEls[n].classList.add('visible'), 20);
+    if (n === idx) lineEls[n].classList.add('active');
+    if (n < idx)   lineEls[n].classList.add('past');
+  });
+}
+
+function updateLyrics(time) {
+  let active = 0;
+  for (let i = 0; i < LYRICS.length; i++) {
+    if (time >= LYRICS[i].t) active = i;
+  }
+  showWindow(active);
+}
+
+/* ══════════════════════════════════════════════
+   AUDIO & PLAYER
+══════════════════════════════════════════════ */
+const audio        = document.getElementById('audio');
+const playBtn      = document.getElementById('playBtn');
+const progressFill = document.getElementById('progressFill');
+const progressWrap = document.getElementById('progressWrap');
+const currentTimeEl= document.getElementById('currentTime');
+const totalTimeEl  = document.getElementById('totalTime');
+
+function fmt(s) {
+  const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2, '0')}`;
+}
+
+audio.addEventListener('timeupdate', () => {
+  const t = audio.currentTime;
+  const d = audio.duration || 1;
+  progressFill.style.width = (t / d * 100) + '%';
+  currentTimeEl.textContent = fmt(t);
+  updateLyrics(t);
+});
+
+audio.addEventListener('loadedmetadata', () => {
+  totalTimeEl.textContent = fmt(audio.duration);
+});
+
+playBtn.addEventListener('click', () => {
+  if (audio.paused) { audio.play(); playBtn.textContent = '⏸'; }
+  else              { audio.pause(); playBtn.textContent = '▶'; }
+  playBtn.classList.add('pulse');
+  setTimeout(() => playBtn.classList.remove('pulse'), 450);
+});
+
+progressWrap.addEventListener('click', e => {
+  const r = progressWrap.getBoundingClientRect();
+  const pct = (e.clientX - r.left) / r.width;
+  audio.currentTime = pct * (audio.duration || 0);
+});
+
+/* ══════════════════════════════════════════════
+   BEAT PULSE (visual only every ~600ms)
+══════════════════════════════════════════════ */
+let lastBeat = 0;
+function beatLoop(ts) {
+  if (!audio.paused && ts - lastBeat > 600) {
+    lastBeat = ts;
+    playBtn.classList.add('pulse');
+    setTimeout(() => playBtn.classList.remove('pulse'), 420);
+  }
+  requestAnimationFrame(beatLoop);
+}
+requestAnimationFrame(beatLoop);
+
+/* ══════════════════════════════════════════════
+   FLOATING HEARTS
+══════════════════════════════════════════════ */
+const HEART_EMOJIS = ['💖','💕','💗','💓','🌸','💞','❤️','🌷'];
+
+function spawnHeart(x) {
+  const h = document.createElement('div');
+  h.className   = 'float-heart';
+  h.textContent = HEART_EMOJIS[Math.floor(Math.random() * HEART_EMOJIS.length)];
+  const dur  = 3 + Math.random() * 2;
+  const size = 1 + Math.random() * 0.8;
+  h.style.left     = (x !== undefined ? x : Math.random() * 90 + 5) + '%';
+  h.style.fontSize = size + 'rem';
+  h.style.setProperty('--dur', dur + 's');
+  document.body.appendChild(h);
+  setTimeout(() => h.remove(), dur * 1000);
+}
+
+document.getElementById('heartBtn').addEventListener('click', () => {
+  for (let i = 0; i < 7; i++) setTimeout(() => spawnHeart(), i * 120);
+});
+
+// Auto-sprinkle hearts occasionally
+setInterval(() => { if (!audio.paused) spawnHeart(); }, 5500);
+
+/* ══════════════════════════════════════════════
+   INTRO → START
+══════════════════════════════════════════════ */
+document.getElementById('tapBtn').addEventListener('click', () => {
+  document.getElementById('intro').classList.add('hidden');
+
+  const stage   = document.getElementById('stage');
+  const player  = document.getElementById('player');
+  const heartBt = document.getElementById('heartBtn');
+
+  stage.classList.add('visible');
+  player.style.opacity  = '1';
+  heartBt.style.opacity = '1';
+
+  // Try autoplay
+  audio.play().then(() => { playBtn.textContent = '⏸'; }).catch(() => {});
+
+  // Typing after short delay
+  setTimeout(startTyping, 600);
+
+  // Welcome hearts
+  setTimeout(() => {
+    for (let i = 0; i < 5; i++) setTimeout(() => spawnHeart(), i * 200);
+  }, 1000);
+});
+
+audio.onended = function () {
+  console.log("Song ended ✅"); // debug check
+
+  // Clear lyrics safely
+  lyricsBox.innerHTML = "";
+
+  // Create final message
+  const finalMsg = document.createElement("div");
+  finalMsg.textContent = `I love you 5000 ❤️`;
+
+  finalMsg.style.fontFamily = "var(--font-display)";
+  finalMsg.style.fontSize = "clamp(2.2rem, 7vw, 3.8rem)";
+  finalMsg.style.fontStyle = "italic";
+  finalMsg.style.textAlign = "center";
+  finalMsg.style.color = "var(--text)";
+  finalMsg.style.opacity = "0";
+  finalMsg.style.transform = "scale(0.7)";
+  finalMsg.style.transition = "all 1.5s ease";
+
+  lyricsBox.appendChild(finalMsg);
+
+  // Animate
+  setTimeout(() => {
+    finalMsg.style.opacity = "1";
+    finalMsg.style.transform = "scale(1)";
+  }, 100);
+
+  // Hearts 💖
+  for (let i = 0; i < 15; i++) {
+    setTimeout(() => spawnHeart(), i * 120);
+  }
+};
+</script>
+</body>
+</html>
